@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Node + SQLite Demo (No Express)</title>
+</head>
+<body>
+    <h1>User Registration</h1>
+    <form id="userForm">
+    <input type="text" name="name" placeholder="Name" required />
+    <input type="email" name="email" placeholder="Email" required />
+    <button type="submit">Add User</button>
+    </form>
+
+    <h2>Users</h2>
+    <ul id="userList"></ul>
+
+    <script>
+    const form = document.getElementById("userForm");
+    const userList = document.getElementById("userList");
+
+    async function loadUsers() {
+        const res = await fetch("/users");
+        const data = await res.json();
+        userList.innerHTML = "";
+        data.users.forEach(u => {
+        const li = document.createElement("li");
+        li.textContent = `${u.name} (${u.email})`;
+        userList.appendChild(li);
+        });
+    }
+
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const formData = new FormData(form);
+        await fetch("/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            name: formData.get("name"),
+            email: formData.get("email")
+        })
+        });
+        form.reset();
+        loadUsers();
+    });
+
+    loadUsers();
+    </script>
+</body>
+</html>
