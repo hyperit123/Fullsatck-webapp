@@ -50,25 +50,42 @@ staminamod.addEventListener('input', function() {
 const actionsTab = document.getElementById('actionsTab');
 const traitsTab = document.getElementById('traitsTab');
 const inventoryTab = document.getElementById('inventoryTab');
+const statusEffectsTab = document.getElementById('statusEffectsTab');
+const notesTab = document.getElementById('notesTab');
 const actions = document.getElementById('Actions');
 const traits = document.getElementById('Traits');
 const inventory = document.getElementById('Inventory');
+const statusEffects = document.getElementById('StatusEffects');
+const notes = document.getElementById('Notes');
 
 const updateTabs = (activeTab) => {
     actions.classList.remove('active');
     traits.classList.remove('active');
     inventory.classList.remove('active');
+    statusEffects.classList.remove('active');
+    notes.classList.remove('active');
     actionsTab.classList.remove('active');
     traitsTab.classList.remove('active');
     inventoryTab.classList.remove('active');
+    statusEffectsTab.classList.remove('active');
+    notesTab.classList.remove('active');
 
-    document.getElementById(activeTab).classList.toggle('active');
-    document.getElementById(`${activeTab.toLowerCase()}Tab`).classList.toggle('active');
+    // Fix for StatusEffects casing
+    let tabId = activeTab;
+    let btnId = activeTab;
+    if (tabId === 'StatusEffects') btnId = 'statusEffectsTab';
+    else if (tabId === 'Notes') btnId = 'notesTab';
+    else btnId = `${activeTab.toLowerCase()}Tab`;
+
+    document.getElementById(tabId).classList.add('active');
+    document.getElementById(btnId).classList.add('active');
 };
 
 actionsTab.addEventListener('click', () => updateTabs('Actions'));
 traitsTab.addEventListener('click', () => updateTabs('Traits'));
 inventoryTab.addEventListener('click', () => updateTabs('Inventory'));
+statusEffectsTab.addEventListener('click', () => updateTabs('StatusEffects'));
+notesTab.addEventListener('click', () => updateTabs('Notes'));
 
 updateTabs('Actions'); // Set initial active tab
 
@@ -94,10 +111,16 @@ function addTabs(section) {
     wrapper.appendChild(textBox);
     wrapper.appendChild(deleteBtn);
 
-    // Add delete functionality
-    deleteBtn.addEventListener('click', () => {
-        sectionContainer.removeChild(wrapper);
-    });
+        // Add delete functionality
+        deleteBtn.addEventListener('click', () => {
+            sectionContainer.removeChild(wrapper);
+            // If this is the status effects section, update the header viewer
+            if (sectionContainer.id === 'status-effects-container') {
+                if (typeof updateStatusEffectsHeaderViewer === 'function') {
+                    updateStatusEffectsHeaderViewer();
+                }
+            }
+        });
 
     // Append wrapper to container
     sectionContainer.appendChild(wrapper);
@@ -141,6 +164,16 @@ function addTabs(section) {
     let addInventoryButton = document.getElementById('add-inventory-button');
     addInventoryButton.addEventListener('click', () => {
         addTabs('inventory');
+    });
+// status effects Section
+    let addStatusEffectsButton = document.getElementById('add-status-effects-button');
+    addStatusEffectsButton.addEventListener('click', () => {
+        addTabs('status-effects');
+    });
+// notes Section
+    let addNotesButton = document.getElementById('add-notes-button');
+    addNotesButton.addEventListener('click', () => {
+        addTabs('notes');
     });
 
 // overly edit menu logic
@@ -413,7 +446,9 @@ addcheckbox.addEventListener("click", function() {
     let delBtn = document.createElement('button');
     delBtn.textContent = 'Delete';
     delBtn.className = 'delete-btn';
-    delBtn.style.marginLeft = '8px';
+    delBtn.style.gridColumn = 'span 2';
+    delBtn.style.height = '30px';
+    delBtn.style.width = '70px';
     delBtn.addEventListener('click', () => {
         chbc.remove();
     });
@@ -552,6 +587,54 @@ document.getElementById("save-btn").addEventListener("click", () => {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 });
+
+// --- Status Effects Viewer Logic ---
+function updateStatusEffectsHeaderViewer() {
+    const list = document.getElementById('status-effects-header-list');
+    if (!list) return;
+    list.innerHTML = '';
+    const container = document.getElementById('status-effects-container');
+    if (!container) return;
+    // Get all textarea values in the status effects tab
+    const effects = Array.from(container.querySelectorAll('textarea'))
+        .map(tb => tb.value.trim())
+        .filter(val => val.length > 0);
+    if (effects.length === 0) {
+        list.innerHTML = '<span style="color:#aaa;">No status effects</span>';
+        return;
+    }
+    effects.forEach(effect => {
+        const div = document.createElement('div');
+        div.textContent = effect;
+        list.appendChild(div);
+    });
+}
+
+// Update viewer when status effects change
+document.addEventListener('input', function(e) {
+    if (e.target.closest('#status-effects-container')) {
+        updateStatusEffectsHeaderViewer();
+    }
+});
+// Also update on tab switch (in case of programmatic changes)
+if (typeof statusEffectsTab !== 'undefined') {
+    statusEffectsTab.addEventListener('click', updateStatusEffectsHeaderViewer);
+}
+// Initial update on page load
+document.addEventListener('DOMContentLoaded', updateStatusEffectsHeaderViewer);
+
+// Update viewer when status effects change
+document.addEventListener('input', function(e) {
+    if (e.target.closest('#status-effects-container')) {
+        updateStatusEffectsHeaderViewer();
+    }
+});
+// Also update on tab switch (in case of programmatic changes)
+if (typeof statusEffectsTab !== 'undefined') {
+    statusEffectsTab.addEventListener('click', updateStatusEffectsHeaderViewer);
+}
+// Initial update on page load
+document.addEventListener('DOMContentLoaded', updateStatusEffectsHeaderViewer);
 
 // Function to reload all dynamic elements
 
@@ -748,8 +831,6 @@ function loadCharacterData(data) {
             textBox.placeholder = id;
             textBox.id = id;
             textBox.value = (payload && payload.value) ? payload.value : "";
-            if (payload && payload.styleWidth) textBox.style.width = payload.styleWidth;
-            if (payload && payload.styleHeight) textBox.style.height = payload.styleHeight;
 
             const deleteBtn = document.createElement("button");
             deleteBtn.textContent = "X";
@@ -762,10 +843,20 @@ function loadCharacterData(data) {
 
             deleteBtn.addEventListener("click", () => {
                 sectionContainer.removeChild(wrapper);
+                // If this is the status effects section, update the header viewer
+                if (sectionContainer.id === 'status-effects-container') {
+                    if (typeof updateStatusEffectsHeaderViewer === 'function') {
+                        updateStatusEffectsHeaderViewer();
+                    }
+                }
             });
 
             sectionContainer.appendChild(wrapper);
         });
+        // After all textboxes are restored, update the status effects header viewer
+        if (typeof updateStatusEffectsHeaderViewer === 'function') {
+            updateStatusEffectsHeaderViewer();
+        }
     }
 
     // Restore extra checkbox groups

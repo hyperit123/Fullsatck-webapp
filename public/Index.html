@@ -24,6 +24,10 @@
             <input type="text" id="speed" disabled>
             <label for="speed">Speed <br>(in tiles)</label>
         </div>
+        <div id="status-effects-header-viewer" class="status-effects-header-viewer">
+            <div class="status-effects-header-title">Status Effects</div>
+            <div id="status-effects-header-list"></div>
+        </div>
         <button id="edit-btn"><img src="edit.png" alt="png" height="35px" width="35px"></button>
     </header>
     <div id="main-content">
@@ -105,6 +109,8 @@
                 <button id="actionsTab" class="active">Actions</button>
                 <button id="traitsTab">Traits</button>
                 <button id="inventoryTab">Inventory</button>
+                <button id="statusEffectsTab">Status Effects</button>
+                <button id="notesTab">Notes</button>
             </div>
             <div id="Actions" class="active">
                 <div class="sections">
@@ -166,6 +172,20 @@
                     <div id="inventory-container" class="textarea-containers">
                     </div>
                     <button id="add-inventory-button">add text</button>
+                </div>
+            </div>
+            <div id="StatusEffects" class="StatusEffects">
+                <div class="sections">
+                    <h3>Status Effects</h3>
+                    <div id="status-effects-container" class="textarea-containers"></div>
+                    <button id="add-status-effects-button">add text</button>
+                </div>
+            </div>
+            <div id="Notes" class="Notes">
+                <div class="sections">
+                    <h3>Notes</h3>
+                    <div id="notes-container" class="textarea-containers"></div>
+                    <button id="add-notes-button">add text</button>
                 </div>
             </div>
         </div>
